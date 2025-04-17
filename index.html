@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelGenius - AI Travel Planner</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #fbbc05;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --error-color: #ea4335;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo-icon {
+            color: var(--primary-color);
+        }
+
+        .hero {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            color: var(--text-color);
+        }
+
+        .planner-section {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .input-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .input-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .interests-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .interest-tag {
+            background-color: #e8f0fe;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .remove-interest {
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .itinerary {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .itinerary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .day-container {
+            margin-bottom: 30px;
+        }
+
+        .day-header {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .activity {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .activity-time {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-description {
+            color: #555;
+        }
+
+        .budget-summary {
+            background-color: #e8f0fe;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            background-color: #fdeded;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .hint {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        footer {
+            background-color: var(--white);
+            padding: 30px 0;
+            margin-top: 60px;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .save-btn {
+            background-color: var(--secondary-color);
+            margin-left: 10px;
+        }
+
+        .print-btn {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .print-section {
+            display: none;
+        }
+
+        @media print {
+            .container, body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            header, .planner-section, footer, .action-buttons {
+                display: none;
+            }
+            
+            .print-section {
+                display: block;
+            }
+            
+            .results-container {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <span class="logo-icon">✈️</span>
+                    TravelGenius
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>AI-Powered Travel Itinerary Planner</h1>
+            <p>Tell us your budget and interests, and our AI will create a personalized travel itinerary just for you.</p>
+        </section>
+
+        <section class="planner-section">
+            <form id="planner-form">
+                <div class="input-form">
+                    <div>
+                        <div class="form-group">
+                            <label for="destination">Destination</label>
+                            <input type="text" id="destination" placeholder="e.g., Tokyo, Paris, New York" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Trip Duration (days)</label>
+                            <input type="number" id="duration" min="1" max="30" value="3" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget">Budget ($)</label>
+                            <input type="number" id="budget" min="100" placeholder="Your total budget in USD" required>
+                            <div class="hint">Enter your total budget for the trip (excluding flights)</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="travelers">Number of Travelers</label>
+                            <input type="number" id="travelers" min="1" max="20" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="travel-style">Travel Style</label>
+                            <select id="travel-style" required>
+                                <option value="budget">Budget-friendly</option>
+                                <option value="standard" selected>Standard</option>
+                                <option value="luxury">Luxury</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="interest-input">Interests (Add up to 5)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="interest-input" placeholder="e.g., history, food, hiking">
+                                <button type="button" id="add-interest" class="btn" style="width: auto;">Add</button>
+                            </div>
+                            <div id="interests-container" class="interests-container"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button type="submit" id="generate-btn" class="btn">Generate Itinerary</button>
+                </div>
+            </form>
+
+            <div id="error-message" class="error-message"></div>
+
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Crafting your perfect itinerary...</p>
+            </div>
+        </section>
+
+        <div id="results-container" class="results-container">
+            <div class="itinerary">
+                <div class="itinerary-header">
+                    <h2 id="itinerary-title">Your Personalized Itinerary</h2>
+                    <div>
+                        <span id="destination-display"></span> | <span id="duration-display"></span> Days
+                    </div>
+                </div>
+                <div id="itinerary-content"></div>
+                <div id="budget-summary" class="budget-summary"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="new-itinerary" class="btn">Create New Itinerary</button>
+                <button id="save-itinerary" class="btn save-btn">Save Itinerary</button>
+                <button id="print-itinerary" class="btn print-btn">Print Itinerary</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 TravelGenius | AI-Powered Travel Planner</p>
+        </div>
+    </footer>
+
+    <script>
+        // API Configuration
+        const API_KEY = 'AIzaSyBHHBFgaQIBEOcxqlNgxMzqRZxIuOEFAmY'; // Replace this with your actual Gemini API key
+        const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+        
+        // Debug Mode
+        const DEBUG = true;
+        
+        // Debugging Functions
+        function debug(message) {
+            if (DEBUG) {
+                console.log(`[DEBUG] ${message}`);
+            }
+        }
+        
+        function debugError(message, error) {
+            if (DEBUG) {
+                console.error(`[ERROR] ${message}`, error);
+                if (error.response) {
+                    console.error('API Response:', error.response);
+                }
+                if (error.stack) {
+                    console.error('Stack Trace:', error.stack);
+                }
+            }
+        }
+        
+        function debugObject(label, obj) {
+            if (DEBUG) {
+                console.group(`[DEBUG] ${label}`);
+                console.dir(obj);
+                console.groupEnd();
+            }
+        }
+        
+        function debugAPIRequest(request) {
+            if (DEBUG) {
+                console.group('[DEBUG] API Request');
+                console.log('URL:', request.url);
+                console.log('Method:', request.method);
+                console.log('Headers:', request.headers);
+                console.log('Body:', request.body);
+                console.groupEnd();
+            }
+        }
+        
+        function debugAPIResponse(response) {
+            if (DEBUG) {
+                console.group('[DEBUG] API Response');
+                console.log('Status:', response.status);
+                console.log('Status Text:', response.statusText);
+                console.log('Headers:', response.headers);
+                console.log('Body:', response.body);
+                console.groupEnd();
+            }
+        }
+        
+        // DOM Elements
+        const form = document.getElementById('planner-form');
+        const destinationInput = document.getElementById('destination');
+        const durationInput = document.getElementById('duration');
+        const budgetInput = document.getElementById('budget');
+        const travelersInput = document.getElementById('travelers');
+        const travelStyleInput = document.getElementById('travel-style');
+        const interestInput = document.getElementById('interest-input');
+        const addInterestButton = document.getElementById('add-interest');
+        const interestsContainer = document.getElementById('interests-container');
+        const generateButton = document.getElementById('generate-btn');
+        const loadingIndicator = document.getElementById('loading');
+        const resultsContainer = document.getElementById('results-container');
+        const itineraryContent = document.getElementById('itinerary-content');
+        const budgetSummary = document.getElementById('budget-summary');
+        const newItineraryButton = document.getElementById('new-itinerary');
+        const saveItineraryButton = document.getElementById('save-itinerary');
+        const printItineraryButton = document.getElementById('print-itinerary');
+        const errorMessage = document.getElementById('error-message');
+        const destinationDisplay = document.getElementById('destination-display');
+        const durationDisplay = document.getElementById('duration-display');
+        
+        // State Management
+        let interests = [];
+        let currentItinerary = null;
+        
+        // Initialize the page
+        function init() {
+            debug('Initializing application');
+            setupEventListeners();
+        }
+        
+        // Set up all event listeners
+        function setupEventListeners() {
+            debug('Setting up event listeners');
+            
+            // Add interest
+            addInterestButton.addEventListener('click', handleAddInterest);
+            interestInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddInterest();
+                }
+            });
+            
+            // Form submission
+            form.addEventListener('submit', handleFormSubmit);
+            
+            // Action buttons
+            newItineraryButton.addEventListener('click', resetForm);
+            saveItineraryButton.addEventListener('click', saveItinerary);
+            printItineraryButton.addEventListener('click', printItinerary);
+        }
+        
+        // Handle adding interests
+        function handleAddInterest() {
+            const interest = interestInput.value.trim();
+            
+            if (interest && interests.length < 5) {
+                if (!interests.includes(interest)) {
+                    interests.push(interest);
+                    renderInterests();
+                    interestInput.value = '';
+                } else {
+                    showError('This interest is already added');
+                }
+            } else if (interests.length >= 5) {
+                showError('You can add up to 5 interests only');
+            }
+            
+            interestInput.focus();
+        }
+        
+        // Render interests tags
+        function renderInterests() {
+            interestsContainer.innerHTML = '';
+            
+            interests.forEach((interest, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'interest-tag';
+                tag.innerHTML = `
+                    ${interest}
+                    <span class="remove-interest" data-index="${index}">✕</span>
+                `;
+                interestsContainer.appendChild(tag);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-interest').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    interests.splice(index, 1);
+                    renderInterests();
+                });
+            });
+        }
+        
+        // Handle form submission
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            hideError();
+            
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Get form data
+            const formData = {
+                destination: destinationInput.value.trim(),
+                duration: parseInt(durationInput.value),
+                budget: parseInt(budgetInput.value),
+                travelers: parseInt(travelersInput.value),
+                travelStyle: travelStyleInput.value,
+                interests: [...interests]
+            };
+            
+            debugObject('Form Data', formData);
+            
+            // Show loading indicator
+            showLoading();
+            
+            try {
+                // Call API
+                const itinerary = await generateItinerary(formData);
+                
+                // Store the current itinerary
+                currentItinerary = itinerary;
+                
+                // Display results
+                displayItinerary(itinerary, formData);
+            } catch (error) {
+                debugError('Error generating itinerary', error);
+                showError('There was an error generating your itinerary. Please try again.');
+                console.error('Full error details:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Validate form inputs
+        function validateForm() {
+            if (!destinationInput.value.trim()) {
+                showError('Please enter a destination');
+                return false;
+            }
+            
+            if (parseInt(durationInput.value) < 1) {
+                showError('Duration must be at least 1 day');
+                return false;
+            }
+            
+            if (parseInt(budgetInput.value) < 100) {
+                showError('Budget must be at least $100');
+                return false;
+            }
+            
+            if (parseInt(travelersInput.value) < 1) {
+                showError('Number of travelers must be at least 1');
+                return false;
+            }
+            
+            if (interests.length === 0) {
+                showError('Please add at least one interest');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Generate itinerary using Gemini API
+        async function generateItinerary(formData) {
+            debug('Calling Gemini API to generate itinerary');
+            
+            const { destination, duration, budget, travelers, travelStyle, interests } = formData;
+            
+            // Create prompt for the API
+            const prompt = {
+                contents: [{
+                    parts: [{
+                        text: `Create a detailed day-by-day travel itinerary for a trip to ${destination} for ${duration} days. 
+                        Budget: $${budget} for ${travelers} traveler(s).
+                        Travel style: ${travelStyle}.
+                        Interests: ${interests.join(', ')}.
+                        
+                        I want the response in JSON format with the following structure:
+                        {
+                          "destination": "${destination}",
+                          "duration": ${duration},
+                          "overview": "Brief overview of the trip",
+                          "budget": {
+                            "total": number,
+                            "accommodation": number,
+                            "food": number,
+                            "activities": number,
+                            "transportation": number,
+                            "misc": number
+                          },
+                          "days": [
+                            {
+                              "day": 1,
+                              "activities": [
+                                {
+                                  "time": "Morning/Afternoon/Evening or specific time",
+                                  "title": "Name of activity",
+                                  "description": "Description of activity",
+                                  "cost": number,
+                                  "type": "Type of activity (food, sightseeing, etc.)"
+                                }
+                              ]
+                            }
+                          ],
+                          "tips": ["Tip 1", "Tip 2"]
+                        }
+                        
+                        Make sure the budget makes sense for the destination, duration, number of travelers, and travel style. Include a variety of activities based on the specified interests.
+                        
+                        IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 2048,
+                },
+                safetySettings: [
+                    {
+                        category: "HARM_CATEGORY_HARASSMENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_HATE_SPEECH",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    }
+                ]
+            };
+            
+            debugObject('API Request Prompt', prompt);
+            
+            try {
+                const request = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': API_KEY
+                    },
+                    body: JSON.stringify(prompt)
+                };
+                
+                debugAPIRequest(request);
+                
+                const response = await fetch(API_ENDPOINT, request);
+                
+                debugAPIResponse(response);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    debugError('API Error Response', errorData);
+                    throw new Error(`API request failed with status ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+                }
+                
+                const data = await response.json();
+                debugObject('API Response Data', data);
+                
+                // Extract the text response and parse the JSON
+                const textResponse = data.candidates[0].content.parts[0].text;
+                
+                // Find the JSON part in the response
+                const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('No valid JSON found in the response');
+                }
+                
+                const jsonText = jsonMatch[0];
+                const parsedData = JSON.parse(jsonText);
+                
+                debugObject('Parsed Itinerary Data', parsedData);
+                return parsedData;
+            } catch (error) {
+                debugError('API Call Error', error);
+                throw error;
+            }
+        }
+        
+        // Display the generated itinerary
+        function displayItinerary(itinerary, formData) {
+            debug('Displaying itinerary');
+            
+            // Update header info
+            destinationDisplay.textContent = itinerary.destination;
+            durationDisplay.textContent = itinerary.duration;
+            
+            // Clear previous content
+            itineraryContent.innerHTML = '';
+            
+            // Add overview
+            const overviewEl = document.createElement('div');
+            overviewEl.innerHTML = `
+                <h3>Overview</h3>
+                <p>${itinerary.overview}</p>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            `;
+            itineraryContent.appendChild(overviewEl);
+            
+            // Add days
+            itinerary.days.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'day-container';
+                
+                // Day header
+                dayEl.innerHTML = `<h3 class="day-header">Day ${day.day}</h3>`;
+                
+                // Activities
+                day.activities.forEach(activity => {
+                    const activityEl = document.createElement('div');
+                    activityEl.className = 'activity';
+                    activityEl.innerHTML = `
+                        <div><span class="activity-time">${activity.time}</span> - $${activity.cost}</div>
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-description">${activity.description}</div>
+                    `;
+                    dayEl.appendChild(activityEl);
+                });
+                
+                itineraryContent.appendChild(dayEl);
+            });
+            
+            // Add tips
+            if (itinerary.tips && itinerary.tips.length > 0) {
+                const tipsEl = document.createElement('div');
+                tipsEl.innerHTML = `
+                    <h3 style="margin-top: 30px;">Travel Tips</h3>
+                    <ul style="padding-left: 20px; margin-top: 10px;">
+                        ${itinerary.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                `;
+                itineraryContent.appendChild(tipsEl);
+            }
+            
+            // Display budget summary
+            const { budget } = itinerary;
+            budgetSummary.innerHTML = `
+                <h3>Budget Breakdown</h3>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <div>
+                        <div><strong>Accommodation:</strong> $${budget.accommodation}</div>
+                        <div><strong>Food:</strong> $${budget.food}</div>
+                        <div><strong>Activities:</strong> $${budget.activities}</div>
+                    </div>
+                    <div>
+                        <div><strong>Transportation:</strong> $${budget.transportation}</div>
+                        <div><strong>Miscellaneous:</strong> $${budget.misc}</div>
+                        <div><strong>Total:</strong> $${budget.total}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 14px;">
+                    <strong>Note:</strong> This budget is based on ${formData.travelers} traveler(s) with a ${formData.travelStyle} travel style.
+                </div>
+            `;
+            
+            // Show results container
+            resultsContainer.style.display = 'block';
+            
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Reset form and hide results
+        function resetForm() {
+            debug('Resetting form');
+            
+            // Reset form fields
+            form.reset();
+            
+            // Clear interests
+            interests = [];
+            renderInterests();
+            
+            // Hide results and errors
+            resultsContainer.style.display = 'none';
+            hideError();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Save itinerary as JSON file
+        function saveItinerary() {
+            debug('Saving itinerary');
+            
+            if (!currentItinerary) {
+                showError('No itinerary to save');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(currentItinerary, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const fileName = `${currentItinerary.destination.replace(/\s+/g, '-').toLowerCase()}-itinerary.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', fileName);
+            linkElement.click();
+        }
+        
+        // Print itinerary
+        function printItinerary() {
+            debug('Printing itinerary');
+            window.print();
+        }
+        
+        // Show loading indicator
+        function showLoading() {
+            loadingIndicator.style.display = 'block';
+            generateButton.disabled = true;
+        }
+        
+        // Hide loading indicator
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+            generateButton.disabled = false;
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideError();
+            }, 5000);
+        }
+        
+        // Hide error message
+        function hideError() {
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
